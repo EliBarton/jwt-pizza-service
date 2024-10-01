@@ -21,6 +21,17 @@ async function createAdminUser() {
     return user;
   }
 
+  async function createDinerUser() {
+    let user = { password: 'a', roles: [{ role: Role.Diner }] };
+    user.name = randomName();
+    user.email = user.name + '@diner.com';
+  
+    await DB.addUser(user);
+  
+    user.password = 'a';
+    return user;
+  }
+
   function randomName() {
     return Math.random().toString(36).substring(2, 12);
   }
@@ -58,4 +69,34 @@ test('get users franchise list', async () => {
     expect(franchiseList.status).toBe(200);
     expect(franchiseList.body.length).toBeGreaterThan(0);
     expect(franchiseList.body[0].name).toBe(testFranchise.name);
+})
+
+test('delete a franchise', async () => {
+    const deleteRes = await request(app).delete('/api/franchise/' + testFranchiseId).set('Authorization', `Bearer ${testUserAuthToken}`);
+    expect(deleteRes.status).toBe(200);
+    const franchiseList = await request(app).get('/api/franchise/' + testUserId).set('Authorization', `Bearer ${testUserAuthToken}`);
+    expect(franchiseList.body[0]).not.toBeDefined();
+})
+
+test('create new franchise store', async () => {
+  const createStoreRes = await request(app).post('/api/franchise/' + testFranchiseId + '/store').set('Authorization', `Bearer ${testUserAuthToken}`).send({ name: randomName() });
+  expect(createStoreRes.status).toBe(200);
+  expect(createStoreRes.body).toBeTruthy();
+})
+
+test('delete a franchise store', async () => {
+  const createStoreRes = await request(app).post('/api/franchise/' + testFranchiseId + '/store').set('Authorization', `Bearer ${testUserAuthToken}`).send({ name: randomName() });
+  expect(createStoreRes.status).toBe(200);
+  const deleteRes = await request(app).delete('/api/franchise/' + testFranchiseId + '/store/' + createStoreRes.body.id).set('Authorization', `Bearer ${testUserAuthToken}`);
+  expect(deleteRes.status).toBe(200);
+
+})
+
+test('unauthorized create franchise', async () => {
+  let diner = await createDinerUser();
+  const loginRes = await request(app).put('/api/auth').send(diner);
+  expect(loginRes.status).toBe(200);
+  testUserAuthToken = loginRes.body.token;
+  const createBadFranchiseRes = await request(app).post('/api/franchise').set('Authorization', `Bearer ${testUserAuthToken}`).send(testFranchise);
+  expect(createBadFranchiseRes.status).toBe(403);
 })
