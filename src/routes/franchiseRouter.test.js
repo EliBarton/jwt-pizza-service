@@ -39,6 +39,7 @@ beforeEach( async () => {
     const createFranchiseRes = await request(app).post('/api/franchise').set('Authorization', `Bearer ${testUserAuthToken}`).send(testFranchise);
     expect(createFranchiseRes.status).toBe(200);
     testFranchiseId = createFranchiseRes.body.id;
+
     
   });
   
@@ -46,8 +47,15 @@ afterEach(async () => {
     DBconnection.close();
 })
 
-test('get franchise list', async () => {
+test('get entire franchise list', async () => {
     const franchiseList = await request(app).get('/api/franchise').set('Authorization', `Bearer ${testUserAuthToken}`);
     expect(franchiseList.status).toBe(200);
-    expect(franchiseList.body.length).isGreaterThan(0);
+    expect(franchiseList.body.length).toBeGreaterThan(0);
+})
+
+test('get users franchise list', async () => {
+    const franchiseList = await request(app).get('/api/franchise/' + testUserId).set('Authorization', `Bearer ${testUserAuthToken}`);
+    expect(franchiseList.status).toBe(200);
+    expect(franchiseList.body.length).toBeGreaterThan(0);
+    expect(franchiseList.body[0].name).toBe(testFranchise.name);
 })
