@@ -22,14 +22,14 @@ function randomName() {
   return Math.random().toString(36).substring(2, 12);
 }
 
-beforeAll(async () => {
+beforeEach(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
   DBconnection = await DB.getConnection();
 });
 
-afterAll(async () => {
+afterEach(async () => {
   await DBconnection.close();
 });
 
@@ -65,7 +65,6 @@ test('new admin user', async () => {
 })
 
 test('authorized update user', async () => {
-  
   let testUserID = await DB.getID(DBconnection, 'email', testUser.email, 'user');
   const updateRes = await request(app).put(`/api/auth/${testUserID}`).set('Authorization', `Bearer ${testUserAuthToken}`).send({ email: 'reg2@test.com', password: 'ayah' });
   expect(updateRes.status).toBe(200);
@@ -73,6 +72,7 @@ test('authorized update user', async () => {
 
 test('unauthorized update user', async () => {
   let testUserID = await DB.getID(DBconnection, 'email', testUser.email, 'user');
-  const updateRes = await request(app).put(`/api/auth/${testUserID}`).send({ email: 'reg2@test.com', password: 'ayah' });
+  const updateRes = await request(app).put(`/api/auth/${testUserID - 1}`).set('Authorization', `Bearer ${testUserAuthToken}`).send({ email: 'reg2@test.com', password: 'ayah' });
   expect(updateRes.status).toBe(403);
 })
+
