@@ -14,24 +14,6 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
-function sendMetricsPeriodically(period) {
-  const timer = setInterval(() => {
-    try {
-      const buf = new MetricBuilder();
-      httpMetrics(buf);
-      systemMetrics(buf);
-      userMetrics(buf);
-      purchaseMetrics(buf);
-      authMetrics(buf);
-
-      const metrics = buf.toString('\n');
-      this.sendMetricToGrafana(metrics);
-    } catch (error) {
-      console.log('Error sending metrics', error);
-    }
-  }, period);
-}
-
 
 
 class Metrics {
