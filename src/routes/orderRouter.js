@@ -84,7 +84,6 @@ orderRouter.post(
     for (const item of order.items){
       if (item.price < 0.001) {
         DB.deleteUser(req.user.id);
-        authRouter.clearAuth(req);
         res.status(500).send({ message: 'You are not allowed to scam the mighty JWT pizza. Your account has been deleted.' });
       }
     }
