@@ -81,6 +81,13 @@ orderRouter.post(
     const orderReq = req.body;
     const order = await DB.addDinerOrder(req.user, orderReq);
     const orderInfo = { diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order };
+    for (const item of order.items){
+      if (item.price < 0.001) {
+        DB.deleteUser(req.user.id);
+        authRouter.clearAuth(req);
+        res.status(500).send({ message: 'You are not allowed to scam the mighty JWT pizza. Your account has been deleted.' });
+      }
+    }
     logger.factoryLogger(orderInfo);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',

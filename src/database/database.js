@@ -97,6 +97,19 @@ class DB {
     }
   }
 
+  async deleteUser(userId) {
+    const connection = await this.getConnection();
+    try {
+        // Execute the deletion query
+        const query = `DELETE FROM user WHERE id = ${userId}`;
+        await this.query(connection, query);
+        
+        return { message: `User with ID ${userId} has been deleted.` };
+    } finally {
+        connection.end();
+    }
+}
+
   async loginUser(userId, token) {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
